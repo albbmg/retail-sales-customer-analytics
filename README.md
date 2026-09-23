@@ -80,10 +80,47 @@ The first dashboard version is expected to include:
 
 Definitions will be documented alongside the SQL and Power BI implementation so the calculations remain consistent across the project.
 
+## Local development
+
+The project uses Python 3.13 and a standard `src/` package layout.
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the project and development tools:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+Run the local quality checks:
+
+```bash
+ruff check .
+ruff format --check .
+```
+
+The GitHub Actions workflow runs the same quality checks on pull requests and on changes merged into `main`. Pytest is enabled automatically once test files are added.
+
 ## Roadmap
 
 - [x] Define project scope and V1 architecture
-- [ ] Set up the Python project structure
+- [x] Set up the Python project structure
 - [ ] Configure PostgreSQL with Docker
 - [ ] Acquire and validate the raw dataset
 - [ ] Build the Pandas cleaning pipeline
