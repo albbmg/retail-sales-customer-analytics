@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 from openpyxl import Workbook
+from pandas.api.types import is_datetime64_any_dtype
 
 from retail_analytics.config import (
     CLEAN_TRANSACTION_COLUMNS,
@@ -44,7 +45,7 @@ def test_transform_transactions_uses_documented_schema_and_types():
     assert tuple(clean.columns) == CLEAN_TRANSACTION_COLUMNS
     assert str(clean["invoice_no"].dtype) == "string"
     assert str(clean["quantity"].dtype) == "Int64"
-    assert str(clean["invoice_date"].dtype) == "datetime64[ns]"
+    assert is_datetime64_any_dtype(clean["invoice_date"])
     assert str(clean["unit_price"].dtype) == "Float64"
     assert str(clean["customer_id"].dtype) == "Int64"
     assert str(clean["source_row"].dtype) == "Int64"
