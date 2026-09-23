@@ -19,13 +19,53 @@ The project will be developed incrementally. The priority is to keep the solutio
 
 ## Dataset
 
-The project will use the **Online Retail II** dataset from the UCI Machine Learning Repository.
+The project uses **Online Retail II** from the UCI Machine Learning Repository.
 
-It contains transactional data from a UK-based online retailer and includes invoices, products, quantities, prices, customers, countries and transaction dates.
+It contains more than one million transactions from a UK-based online retailer between December 2009 and December 2011.
 
 Dataset source: https://archive.ics.uci.edu/dataset/502/online+retail+ii
 
-The raw dataset will not be committed to the repository. Instructions to download and prepare it will be added as part of the data pipeline.
+Citation:
+
+> Chen, D. (2012). Online Retail II [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CG6D
+
+The dataset is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
+
+The raw workbook is intentionally excluded from Git. The project downloads it directly from UCI and validates its structure before any cleaning or transformation takes place.
+
+### Raw data contract
+
+The source workbook is expected to contain these two sheets:
+
+- `Year 2009-2010`
+- `Year 2010-2011`
+
+Each sheet must expose the original source columns in this order:
+
+```text
+Invoice
+StockCode
+Description
+Quantity
+InvoiceDate
+Price
+Customer ID
+Country
+```
+
+Download and validate the dataset:
+
+```bash
+python -m retail_analytics.extract
+```
+
+The command stores the workbook at `data/raw/online_retail_II.xlsx`, verifies the expected sheets and columns, and reports the row count for each sheet.
+
+Use `--force` only when the raw workbook needs to be downloaded again:
+
+```bash
+python -m retail_analytics.extract --force
+```
 
 ## V1 scope
 
@@ -113,9 +153,10 @@ Run the local quality checks:
 ```bash
 ruff check .
 ruff format --check .
+pytest
 ```
 
-The GitHub Actions workflow runs the same quality checks on pull requests and on changes merged into `main`. Pytest is enabled automatically once test files are added.
+The GitHub Actions workflow runs the same quality checks on pull requests and on changes merged into `main`.
 
 ### PostgreSQL
 
@@ -146,7 +187,7 @@ The database is stored in a Docker named volume, so stopping the container does 
 - [x] Define project scope and V1 architecture
 - [x] Set up the Python project structure
 - [x] Configure PostgreSQL with Docker
-- [ ] Acquire and validate the raw dataset
+- [x] Add reproducible raw dataset acquisition and validation
 - [ ] Build the Pandas cleaning pipeline
 - [ ] Create the analytical data model
 - [ ] Add SQL data-quality checks
