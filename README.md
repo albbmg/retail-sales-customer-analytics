@@ -67,9 +67,40 @@ Use `--force` only when the raw workbook needs to be downloaded again:
 python -m retail_analytics.extract --force
 ```
 
+### Clean data contract
+
+The Pandas transformation combines both source periods and writes a typed Parquet file to `data/processed/transactions.parquet`.
+
+The clean dataset contains:
+
+```text
+invoice_no
+stock_code
+description
+quantity
+invoice_date
+unit_price
+customer_id
+country
+source_period
+source_row
+is_cancellation
+line_amount
+```
+
+The transformation intentionally does **not** drop cancellations, negative adjustments, missing customer IDs or duplicate rows. These records remain available so analytical rules can be applied explicitly later instead of being hidden inside the cleaning step.
+
+`source_period` and `source_row` provide row-level lineage back to the original workbook. `line_amount` is calculated as `quantity * unit_price`, so cancellations and negative adjustments naturally retain their financial sign.
+
+Build the clean dataset after acquiring the raw workbook:
+
+```bash
+python -m retail_analytics.transform
+```
+
 ## V1 scope
 
-The first version will follow this flow:
+The first version follows this flow:
 
 ```text
 Raw dataset
@@ -188,7 +219,7 @@ The database is stored in a Docker named volume, so stopping the container does 
 - [x] Set up the Python project structure
 - [x] Configure PostgreSQL with Docker
 - [x] Add reproducible raw dataset acquisition and validation
-- [ ] Build the Pandas cleaning pipeline
+- [x] Build the Pandas raw-to-clean transformation pipeline
 - [ ] Create the analytical data model
 - [ ] Add SQL data-quality checks
 - [ ] Develop sales, customer and product analysis
@@ -200,4 +231,4 @@ The database is stored in a Docker named volume, so stopping the container does 
 
 **In progress.**
 
-The repository is intentionally being built in small, reviewable steps. Documentation will evolve together with the implementation rather than describing features that do not exist yet.
+The repository is intentionally being built in small, reviewable steps. Documentation evolves together with the implementation rather than describing features that do not exist yet.
