@@ -1,21 +1,45 @@
 # Retail Sales & Customer Analytics
 
-End-to-end Data Analytics / Business Intelligence portfolio project focused on retail sales and customer behaviour.
+A reproducible analytical study of transactional retail data, focused on sales behaviour, customer activity, product performance, geographic distribution and order cancellations.
 
-The goal is to build a small but complete analytics workflow, starting from raw transactional data and ending with a business-focused Power BI dashboard.
+I started this project to explore how these parts of an online retail business interact over time using the **Online Retail II** dataset from the UCI Machine Learning Repository. The analysis is built as a complete data workflow, from the original workbook to a BI-ready analytical model.
 
-## Project objective
+## Questions explored
 
-This project is intended to demonstrate practical skills in:
+The study is organised around a small set of business questions:
 
-- Python and Pandas for data cleaning and transformation
-- SQL for data modelling and analytical queries
-- PostgreSQL as the analytical database
-- Power BI for KPI reporting and visual analysis
-- Docker for a reproducible local environment
-- Git and GitHub for version control and project documentation
+- How do sales and order volumes evolve over time?
+- Which customers contribute the most revenue and activity?
+- Which products generate the highest revenue and unit volume?
+- How is revenue distributed across countries?
+- What is the financial impact of cancellations and negative adjustments?
+- How do average order value and revenue per customer change over time?
 
-The project will be developed incrementally. The priority is to keep the solution understandable, reproducible and easy to explain in a technical interview.
+The objective is to answer these questions from a reproducible data model rather than from one-off spreadsheet calculations.
+
+## Architecture
+
+```text
+UCI Online Retail II
+        ↓
+Raw Excel workbook
+        ↓
+Validation
+        ↓
+Python / Pandas
+        ↓
+Clean Parquet
+        ↓
+PostgreSQL staging
+        ↓
+Analytical star schema
+        ↓
+Power BI
+        ↓
+Sales & customer analysis
+```
+
+The workflow deliberately separates raw data, clean data, staging and analytical layers so that transformations remain explicit and traceable.
 
 ## Dataset
 
@@ -31,16 +55,18 @@ Citation:
 
 The dataset is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
 
-The raw workbook is intentionally excluded from Git. The project downloads it directly from UCI and validates its structure before any cleaning or transformation takes place.
+The raw workbook is not committed to Git. It is downloaded directly from UCI and validated before any transformation is applied.
 
-### Raw data contract
+## Data pipeline
 
-The source workbook is expected to contain these two sheets:
+### 1. Raw data acquisition and validation
+
+The source workbook is expected to contain:
 
 - `Year 2009-2010`
 - `Year 2010-2011`
 
-Each sheet must expose the original source columns in this order:
+Each sheet must expose the original columns in this order:
 
 ```text
 Invoice
@@ -53,25 +79,33 @@ Customer ID
 Country
 ```
 
-Download and validate the dataset:
+Download and validate the source data:
 
 ```bash
 python -m retail_analytics.extract
 ```
 
-The command stores the workbook at `data/raw/online_retail_II.xlsx`, verifies the expected sheets and columns, and reports the row count for each sheet.
+The workbook is stored at:
 
-Use `--force` only when the raw workbook needs to be downloaded again:
+```text
+data/raw/online_retail_II.xlsx
+```
+
+Use `--force` only when the source workbook needs to be downloaded again:
 
 ```bash
 python -m retail_analytics.extract --force
 ```
 
-### Clean data contract
+### 2. Clean transformation layer
 
-The Pandas transformation combines both source periods and writes a typed Parquet file to `data/processed/transactions.parquet`.
+The two source periods are combined with Pandas and written to:
 
-The clean dataset contains:
+```text
+data/processed/transactions.parquet
+```
+
+The clean schema is:
 
 ```text
 invoice_no
@@ -88,88 +122,78 @@ is_cancellation
 line_amount
 ```
 
-The transformation intentionally does **not** drop cancellations, negative adjustments, missing customer IDs or duplicate rows. These records remain available so analytical rules can be applied explicitly later instead of being hidden inside the cleaning step.
+Important transformation decisions:
 
-`source_period` and `source_row` provide row-level lineage back to the original workbook. `line_amount` is calculated as `quantity * unit_price`, so cancellations and negative adjustments naturally retain their financial sign.
+- source column names are normalised to a stable snake_case schema;
+- dates and numeric fields are converted explicitly;
+- missing customer IDs are preserved as nullable values;
+- cancellations and negative adjustments are retained;
+- duplicate source rows are not silently removed;
+- `source_period` and `source_row` preserve row-level lineage;
+- `is_cancellation` is derived from the invoice number;
+- `line_amount` is calculated as `quantity * unit_price`.
 
-Build the clean dataset after acquiring the raw workbook:
+Build the clean dataset:
 
 ```bash
 python -m retail_analytics.transform
 ```
 
-### PostgreSQL staging
+### 3. PostgreSQL staging
 
-The clean Parquet dataset is loaded into `staging.transactions` before analytical modelling begins.
+The Parquet dataset is loaded into:
 
-The staging table mirrors the clean-layer contract and preserves `source_period` and `source_row` as the row-level source key. For V1, the load uses a **full refresh** strategy:
-
-1. create the staging schema/table if needed;
-2. truncate the existing staging table;
-3. bulk load the complete Parquet dataset with PostgreSQL `COPY`;
-4. compare the loaded row count with the Parquet source;
-5. commit only when the counts match.
-
-All of these operations run inside one database transaction. A failed load rolls back instead of leaving a partially refreshed staging table.
-
-Start PostgreSQL:
-
-```bash
-docker compose up -d --wait postgres
+```text
+staging.transactions
 ```
 
-Load the clean dataset:
+The staging table mirrors the clean data contract and preserves the source lineage key.
+
+The current loading strategy is a transactional full refresh:
+
+1. create the staging schema and table if needed;
+2. truncate the existing staging table;
+3. bulk load the complete clean dataset with PostgreSQL `COPY`;
+4. compare the loaded row count with the Parquet source;
+5. commit only when both counts match.
+
+If any step fails, the transaction is rolled back.
+
+Load the clean data into PostgreSQL:
 
 ```bash
 python -m retail_analytics.load
 ```
 
-The loader reads connection details from `.env` / environment variables defined in `.env.example`. Real credentials must never be committed.
+## Analytical model
 
-## V1 scope
-
-The first version follows this flow:
+The analytical layer is being built as a star schema with one fact table and four dimensions:
 
 ```text
-Raw dataset
-    ↓
-Python / Pandas
-    ↓
-Clean Parquet
-    ↓
-PostgreSQL staging
-    ↓
-SQL analytical model
-    ↓
-Power BI
-    ↓
-Business insights
+              dim_date
+                  │
+                  │
+dim_customer ─ fact_sales ─ dim_product
+                  │
+                  │
+              dim_country
 ```
 
-The initial analysis will focus on:
+Planned tables:
 
-- Sales evolution over time
-- Number of orders and average order value
-- Customer activity and top customers
-- Product performance
-- Geographic sales distribution
-- Order cancellations and their impact
+- `analytics.fact_sales`
+- `analytics.dim_date`
+- `analytics.dim_customer`
+- `analytics.dim_product`
+- `analytics.dim_country`
 
-## Planned data model
+The grain of `fact_sales` is **one product line within an invoice**.
 
-The analytical layer will use a simple star schema:
+Cancellations and negative adjustments remain part of the fact table so they can be analysed explicitly rather than removed during preparation.
 
-- `fact_sales`
-- `dim_date`
-- `dim_customer`
-- `dim_product`
-- `dim_country`
+## Measures
 
-The grain of `fact_sales` will be one product line within an invoice.
-
-## Initial KPIs
-
-The first dashboard version is expected to include:
+The initial analytical layer is designed around:
 
 - Net revenue
 - Orders
@@ -179,49 +203,49 @@ The first dashboard version is expected to include:
 - Revenue per customer
 - Cancellation rate
 
-Definitions will be documented alongside the SQL and Power BI implementation so the calculations remain consistent across the project.
+The final definitions will live alongside the SQL model and Power BI measures so each KPI has one documented business meaning.
 
-## Local development
+## Running the project locally
 
-The project uses Python 3.13 and a standard `src/` package layout.
+### Python environment
 
-Create and activate a virtual environment:
+The project uses Python 3.13.
+
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-macOS/Linux:
+Activate it on macOS/Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Windows PowerShell:
+Or on Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the project and development tools:
+Install the project and development dependencies:
 
 ```bash
 python -m pip install -e ".[dev]"
 ```
 
-Run the local quality checks:
+### PostgreSQL
+
+Copy `.env.example` to a local `.env` file before changing the default database settings.
+
+Start PostgreSQL:
 
 ```bash
-ruff check .
-ruff format --check .
-pytest
+docker compose up -d --wait postgres
 ```
 
-GitHub Actions runs these checks on pull requests and on changes merged into `main`. A separate integration job starts PostgreSQL with Docker and exercises the real staging loader.
-
-### PostgreSQL lifecycle
-
-Check container status:
+Check its status:
 
 ```bash
 docker compose ps
@@ -233,25 +257,33 @@ Stop the environment:
 docker compose down
 ```
 
-The database is stored in a Docker named volume, so stopping the container does not remove local data. Use `docker compose down -v` only when an intentional database reset is required.
+The database uses a Docker named volume. Use `docker compose down -v` only when an intentional database reset is required.
 
-## Roadmap
+## Quality checks
 
-- [x] Define project scope and V1 architecture
-- [x] Set up the Python project structure
+Run the local checks with:
+
+```bash
+ruff check .
+ruff format --check .
+pytest
+```
+
+GitHub Actions runs the same checks on pull requests and on changes merged into `main`.
+
+A separate integration job starts PostgreSQL with Docker and verifies the staging loader against a real database instance.
+
+## Current progress
+
+- [x] Define the analytical scope
+- [x] Configure the Python project
 - [x] Configure PostgreSQL with Docker
-- [x] Add reproducible raw dataset acquisition and validation
-- [x] Build the Pandas raw-to-clean transformation pipeline
+- [x] Add reproducible dataset acquisition and raw validation
+- [x] Build the Pandas raw-to-clean transformation
 - [x] Load clean transactions into PostgreSQL staging
-- [ ] Create the analytical data model
+- [ ] Build the analytical star schema
 - [ ] Add SQL data-quality checks
 - [ ] Develop sales, customer and product analysis
-- [ ] Define KPIs and Power BI measures
+- [ ] Define final KPI calculations
 - [ ] Build the Power BI dashboard
-- [ ] Document business insights and final architecture
-
-## Project status
-
-**In progress.**
-
-The repository is intentionally being built in small, reviewable steps. Documentation evolves together with the implementation rather than describing features that do not exist yet.
+- [ ] Document findings and business conclusions
