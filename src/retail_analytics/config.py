@@ -10,6 +10,9 @@ RAW_WORKBOOK_PATH = RAW_DATA_DIR / "online_retail_II.xlsx"
 PROCESSED_DATA_DIR = Path("data/processed")
 PROCESSED_TRANSACTIONS_PATH = PROCESSED_DATA_DIR / "transactions.parquet"
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+STAGING_SCHEMA_SQL_PATH = PROJECT_ROOT / "sql/staging/01_create_transactions.sql"
+
 EXPECTED_SHEETS = (
     "Year 2009-2010",
     "Year 2010-2011",

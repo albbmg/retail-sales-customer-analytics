@@ -98,6 +98,34 @@ Build the clean dataset after acquiring the raw workbook:
 python -m retail_analytics.transform
 ```
 
+### PostgreSQL staging
+
+The clean Parquet dataset is loaded into `staging.transactions` before analytical modelling begins.
+
+The staging table mirrors the clean-layer contract and preserves `source_period` and `source_row` as the row-level source key. For V1, the load uses a **full refresh** strategy:
+
+1. create the staging schema/table if needed;
+2. truncate the existing staging table;
+3. bulk load the complete Parquet dataset with PostgreSQL `COPY`;
+4. compare the loaded row count with the Parquet source;
+5. commit only when the counts match.
+
+All of these operations run inside one database transaction. A failed load rolls back instead of leaving a partially refreshed staging table.
+
+Start PostgreSQL:
+
+```bash
+docker compose up -d --wait postgres
+```
+
+Load the clean dataset:
+
+```bash
+python -m retail_analytics.load
+```
+
+The loader reads connection details from `.env` / environment variables defined in `.env.example`. Real credentials must never be committed.
+
 ## V1 scope
 
 The first version follows this flow:
@@ -107,7 +135,9 @@ Raw dataset
     ↓
 Python / Pandas
     ↓
-PostgreSQL
+Clean Parquet
+    ↓
+PostgreSQL staging
     ↓
 SQL analytical model
     ↓
@@ -187,19 +217,11 @@ ruff format --check .
 pytest
 ```
 
-The GitHub Actions workflow runs the same quality checks on pull requests and on changes merged into `main`.
+GitHub Actions runs these checks on pull requests and on changes merged into `main`. A separate integration job starts PostgreSQL with Docker and exercises the real staging loader.
 
-### PostgreSQL
+### PostgreSQL lifecycle
 
-Create a local `.env` file from `.env.example` before changing the default database credentials.
-
-Start PostgreSQL:
-
-```bash
-docker compose up -d postgres
-```
-
-Check its status:
+Check container status:
 
 ```bash
 docker compose ps
@@ -220,6 +242,7 @@ The database is stored in a Docker named volume, so stopping the container does 
 - [x] Configure PostgreSQL with Docker
 - [x] Add reproducible raw dataset acquisition and validation
 - [x] Build the Pandas raw-to-clean transformation pipeline
+- [x] Load clean transactions into PostgreSQL staging
 - [ ] Create the analytical data model
 - [ ] Add SQL data-quality checks
 - [ ] Develop sales, customer and product analysis
