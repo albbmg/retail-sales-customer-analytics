@@ -59,15 +59,11 @@ def _to_nullable_integer(series: pd.Series, column_name: str) -> pd.Series:
     try:
         numeric = pd.to_numeric(series, errors="raise")
     except (TypeError, ValueError) as exc:
-        raise TransformationError(
-            f"{column_name} contains non-numeric values"
-        ) from exc
+        raise TransformationError(f"{column_name} contains non-numeric values") from exc
 
     non_null = numeric.dropna()
     if ((non_null % 1) != 0).any():
-        raise TransformationError(
-            f"{column_name} contains non-integer values"
-        )
+        raise TransformationError(f"{column_name} contains non-integer values")
 
     return numeric.astype("Int64")
 
@@ -83,11 +79,7 @@ def transform_transactions(raw: pd.DataFrame) -> pd.DataFrame:
         missing = ", ".join(missing_columns)
         raise TransformationError(f"Missing required column(s): {missing}")
 
-    clean = (
-        raw.loc[:, required_columns]
-        .rename(columns=RAW_TO_CLEAN_COLUMNS)
-        .copy()
-    )
+    clean = raw.loc[:, required_columns].rename(columns=RAW_TO_CLEAN_COLUMNS).copy()
 
     for column in (
         "invoice_no",
@@ -114,9 +106,7 @@ def transform_transactions(raw: pd.DataFrame) -> pd.DataFrame:
             errors="raise",
         )
     except (TypeError, ValueError) as exc:
-        raise TransformationError(
-            "invoice_date contains invalid date values"
-        ) from exc
+        raise TransformationError("invoice_date contains invalid date values") from exc
 
     try:
         clean["unit_price"] = pd.to_numeric(
@@ -124,14 +114,10 @@ def transform_transactions(raw: pd.DataFrame) -> pd.DataFrame:
             errors="raise",
         ).astype("Float64")
     except (TypeError, ValueError) as exc:
-        raise TransformationError(
-            "unit_price contains non-numeric values"
-        ) from exc
+        raise TransformationError("unit_price contains non-numeric values") from exc
 
     clean["is_cancellation"] = (
-        clean["invoice_no"]
-        .str.startswith("C", na=False)
-        .astype("boolean")
+        clean["invoice_no"].str.startswith("C", na=False).astype("boolean")
     )
     clean["line_amount"] = (
         clean["quantity"].astype("Float64") * clean["unit_price"]
