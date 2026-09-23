@@ -117,11 +117,35 @@ ruff format --check .
 
 The GitHub Actions workflow runs the same quality checks on pull requests and on changes merged into `main`. Pytest is enabled automatically once test files are added.
 
+### PostgreSQL
+
+Create a local `.env` file from `.env.example` before changing the default database credentials.
+
+Start PostgreSQL:
+
+```bash
+docker compose up -d postgres
+```
+
+Check its status:
+
+```bash
+docker compose ps
+```
+
+Stop the environment:
+
+```bash
+docker compose down
+```
+
+The database is stored in a Docker named volume, so stopping the container does not remove local data. Use `docker compose down -v` only when an intentional database reset is required.
+
 ## Roadmap
 
 - [x] Define project scope and V1 architecture
 - [x] Set up the Python project structure
-- [ ] Configure PostgreSQL with Docker
+- [x] Configure PostgreSQL with Docker
 - [ ] Acquire and validate the raw dataset
 - [ ] Build the Pandas cleaning pipeline
 - [ ] Create the analytical data model
