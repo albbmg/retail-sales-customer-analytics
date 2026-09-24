@@ -246,6 +246,12 @@ PostgreSQL integration tests are isolated with the `integration` marker and run 
 
 GitHub Actions also starts PostgreSQL in an isolated Docker environment and validates the database load and analytical model against a real database instance.
 
+## Power BI
+
+The semantic-model relationships, DAX/TMDL measures and three-page dashboard specification are versioned under [`powerbi/`](powerbi/).
+
+The report consumes the PostgreSQL `analytics` schema in Import mode so the visual layer does not redefine preparation or business rules.
+
 ## Current progress
 
 - [x] Define the analytical scope
@@ -258,5 +264,5 @@ GitHub Actions also starts PostgreSQL in an isolated Docker environment and vali
 - [x] Add SQL data-quality checks
 - [x] Develop sales, customer and product analysis
 - [x] Define final KPI calculations
-- [ ] Build the Power BI dashboard
+- [ ] Build and validate the Power BI report
 - [ ] Document findings and business conclusions

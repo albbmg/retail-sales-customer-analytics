@@ -35,3 +35,8 @@ postgres_data/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Power BI local project state
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+**/.pbi/unappliedChanges.json
