@@ -201,7 +201,7 @@ The exact business definitions will be added alongside the analytical SQL used f
 
 ## Running the project locally
 
-The project uses Python 3.13.
+The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
 
 ```bash
 python -m venv .venv
@@ -216,6 +216,7 @@ python -m retail_analytics.extract
 python -m retail_analytics.transform
 python -m retail_analytics.load
 python -m retail_analytics.analytics
+python -m retail_analytics.quality
 ```
 
 Database connection settings are read from `.env` / environment variables. Real credentials are not committed.
@@ -225,8 +226,10 @@ Database connection settings are read from `.env` / environment variables. Real 
 ```bash
 ruff check .
 ruff format --check .
-pytest
+pytest -m "not integration"
 ```
+
+PostgreSQL integration tests are isolated with the `integration` marker and run separately in CI against a disposable database instance.
 
 GitHub Actions also starts PostgreSQL in an isolated Docker environment and validates the database load and analytical model against a real database instance.
 

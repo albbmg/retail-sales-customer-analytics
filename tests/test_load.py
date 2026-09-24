@@ -68,6 +68,14 @@ def test_validate_clean_dataset_rejects_duplicate_lineage():
         validate_clean_dataset(frame)
 
 
+def test_validate_clean_dataset_rejects_null_invoice_date():
+    frame = make_clean_frame()
+    frame.loc[0, "invoice_date"] = pd.NaT
+
+    with pytest.raises(LoadError, match="invoice_date contains null"):
+        validate_clean_dataset(frame)
+
+
 def test_read_clean_dataset_round_trips_parquet(tmp_path):
     frame = make_clean_frame()
     path = tmp_path / "transactions.parquet"
