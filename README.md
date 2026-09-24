@@ -159,7 +159,31 @@ Rebuild the analytical model:
 
 ```bash
 python -m retail_analytics.analytics
+python -m retail_analytics.quality
 ```
+
+## Analytical data quality
+
+The analytical model is checked against staging with a versioned SQL suite after each rebuild.
+
+The checks cover:
+
+- staging and fact-table row counts;
+- one-to-one source lineage;
+- fact-to-dimension relationships;
+- unknown customer, product and country mappings;
+- cancellation flags;
+- date keys;
+- unit prices and line amounts;
+- uniqueness of dimension business keys.
+
+Run the checks with:
+
+```bash
+python -m retail_analytics.quality
+```
+
+Each rule returns a check name and the number of violating rows. Any non-zero result fails the command.
 
 ## Measures
 
@@ -215,7 +239,7 @@ GitHub Actions also starts PostgreSQL in an isolated Docker environment and vali
 - [x] Build the Pandas raw-to-clean transformation
 - [x] Load clean transactions into PostgreSQL staging
 - [x] Build the analytical star schema
-- [ ] Add SQL data-quality checks
+- [x] Add SQL data-quality checks
 - [ ] Develop sales, customer and product analysis
 - [ ] Define final KPI calculations
 - [ ] Build the Power BI dashboard
