@@ -197,19 +197,20 @@ The analysis is intentionally limited to what can be supported by the transactio
 
 These constraints are treated as part of the analytical model rather than as data to hide during preparation.
 
-## Measures
+## SQL analysis and KPI definitions
 
-The analytical layer is designed around:
+The business definitions used by the analysis are documented in [`docs/kpi_definitions.md`](docs/kpi_definitions.md).
 
-- Net revenue
-- Orders
-- Units sold
-- Average order value
-- Active customers
-- Revenue per customer
-- Cancellation rate
+Versioned SQL queries live under `sql/analysis/` and cover:
 
-The exact business definitions will be added alongside the analytical SQL used for the study.
+- overall KPIs;
+- monthly sales trends;
+- customer performance;
+- product performance;
+- country performance;
+- cancellation trends.
+
+The queries run against the analytical star schema rather than staging, keeping business analysis separate from ingestion and preparation.
 
 ## Running the project locally
 
@@ -255,7 +256,7 @@ GitHub Actions also starts PostgreSQL in an isolated Docker environment and vali
 - [x] Load clean transactions into PostgreSQL staging
 - [x] Build the analytical star schema
 - [x] Add SQL data-quality checks
-- [ ] Develop sales, customer and product analysis
-- [ ] Define final KPI calculations
+- [x] Develop sales, customer and product analysis
+- [x] Define final KPI calculations
 - [ ] Build the Power BI dashboard
 - [ ] Document findings and business conclusions
