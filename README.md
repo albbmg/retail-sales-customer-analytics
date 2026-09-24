@@ -185,6 +185,18 @@ python -m retail_analytics.quality
 
 Each rule returns a check name and the number of violating rows. Any non-zero result fails the command.
 
+## Scope and limitations
+
+The analysis is intentionally limited to what can be supported by the transaction data:
+
+- the dataset represents one historical retail context, so findings are interpreted within that period rather than as current market behaviour;
+- revenue is derived from transaction quantity and unit price; the source does not provide product cost or margin information, so the study does not infer profitability;
+- transactions without a customer identifier are retained and mapped to the explicit unknown-customer member;
+- cancellations and negative adjustments remain visible instead of being discarded or silently netted out;
+- product descriptions can vary over time, so the product dimension uses a documented canonicalisation rule while the fact table retains source-level lineage.
+
+These constraints are treated as part of the analytical model rather than as data to hide during preparation.
+
 ## Measures
 
 The analytical layer is designed around:
