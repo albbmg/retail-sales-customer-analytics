@@ -61,6 +61,9 @@ def validate_clean_dataset(transactions: pd.DataFrame) -> None:
     if transactions.duplicated(lineage_columns).any():
         raise LoadError("Source lineage contains duplicate rows")
 
+    if transactions["invoice_date"].isna().any():
+        raise LoadError("invoice_date contains null values")
+
 
 def read_clean_dataset(path: Path = PROCESSED_TRANSACTIONS_PATH) -> pd.DataFrame:
     path = Path(path)

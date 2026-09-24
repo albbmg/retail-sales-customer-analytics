@@ -16,10 +16,13 @@ from retail_analytics.quality import (
 )
 from retail_analytics.transform import transform_transactions
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("RUN_POSTGRES_INTEGRATION") != "1",
-    reason="PostgreSQL integration environment is not enabled",
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        os.getenv("RUN_POSTGRES_INTEGRATION") != "1",
+        reason="PostgreSQL integration environment is not enabled",
+    ),
+]
 
 
 def make_clean_frame() -> pd.DataFrame:

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS staging.transactions (
     stock_code TEXT,
     description TEXT,
     quantity INTEGER,
-    invoice_date TIMESTAMP WITHOUT TIME ZONE,
+    invoice_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     unit_price DOUBLE PRECISION,
     customer_id BIGINT,
     country TEXT,

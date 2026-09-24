@@ -185,6 +185,18 @@ python -m retail_analytics.quality
 
 Each rule returns a check name and the number of violating rows. Any non-zero result fails the command.
 
+## Scope and limitations
+
+The analysis is intentionally limited to what can be supported by the transaction data:
+
+- the dataset represents one historical retail context, so findings are interpreted within that period rather than as current market behaviour;
+- revenue is derived from transaction quantity and unit price; the source does not provide product cost or margin information, so the study does not infer profitability;
+- transactions without a customer identifier are retained and mapped to the explicit unknown-customer member;
+- cancellations and negative adjustments remain visible instead of being discarded or silently netted out;
+- product descriptions can vary over time, so the product dimension uses a documented canonicalisation rule while the fact table retains source-level lineage.
+
+These constraints are treated as part of the analytical model rather than as data to hide during preparation.
+
 ## Measures
 
 The analytical layer is designed around:
@@ -201,7 +213,7 @@ The exact business definitions will be added alongside the analytical SQL used f
 
 ## Running the project locally
 
-The project uses Python 3.13.
+The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
 
 ```bash
 python -m venv .venv
@@ -216,6 +228,7 @@ python -m retail_analytics.extract
 python -m retail_analytics.transform
 python -m retail_analytics.load
 python -m retail_analytics.analytics
+python -m retail_analytics.quality
 ```
 
 Database connection settings are read from `.env` / environment variables. Real credentials are not committed.
@@ -225,8 +238,10 @@ Database connection settings are read from `.env` / environment variables. Real 
 ```bash
 ruff check .
 ruff format --check .
-pytest
+pytest -m "not integration"
 ```
+
+PostgreSQL integration tests are isolated with the `integration` marker and run separately in CI against a disposable database instance.
 
 GitHub Actions also starts PostgreSQL in an isolated Docker environment and validates the database load and analytical model against a real database instance.
 
