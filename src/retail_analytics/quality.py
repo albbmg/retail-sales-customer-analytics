@@ -60,8 +60,7 @@ def assert_quality(results: tuple[QualityCheckResult, ...]) -> None:
 
     if failures:
         summary = ", ".join(
-            f"{failure.check_name}={failure.failed_rows}"
-            for failure in failures
+            f"{failure.check_name}={failure.failed_rows}" for failure in failures
         )
         raise DataQualityError(f"Analytical data-quality checks failed: {summary}")
 
