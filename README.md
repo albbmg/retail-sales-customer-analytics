@@ -61,23 +61,7 @@ The raw workbook is not committed to Git. It is downloaded directly from UCI and
 
 ### 1. Raw data acquisition and validation
 
-The source workbook is expected to contain:
-
-- `Year 2009-2010`
-- `Year 2010-2011`
-
-Each sheet must expose the original columns in this order:
-
-```text
-Invoice
-StockCode
-Description
-Quantity
-InvoiceDate
-Price
-Customer ID
-Country
-```
+The source workbook contains two periods, `Year 2009-2010` and `Year 2010-2011`, with the original UCI columns.
 
 Download and validate the source data:
 
@@ -85,25 +69,11 @@ Download and validate the source data:
 python -m retail_analytics.extract
 ```
 
-The workbook is stored at:
-
-```text
-data/raw/online_retail_II.xlsx
-```
-
-Use `--force` only when the source workbook needs to be downloaded again:
-
-```bash
-python -m retail_analytics.extract --force
-```
+The workbook is stored at `data/raw/online_retail_II.xlsx`.
 
 ### 2. Clean transformation layer
 
-The two source periods are combined with Pandas and written to:
-
-```text
-data/processed/transactions.parquet
-```
+The two source periods are combined with Pandas and written to `data/processed/transactions.parquet`.
 
 The clean schema is:
 
@@ -124,13 +94,12 @@ line_amount
 
 Important transformation decisions:
 
-- source column names are normalised to a stable snake_case schema;
+- source column names are normalised to snake_case;
 - dates and numeric fields are converted explicitly;
-- missing customer IDs are preserved as nullable values;
+- missing customer IDs are preserved;
 - cancellations and negative adjustments are retained;
 - duplicate source rows are not silently removed;
 - `source_period` and `source_row` preserve row-level lineage;
-- `is_cancellation` is derived from the invoice number;
 - `line_amount` is calculated as `quantity * unit_price`.
 
 Build the clean dataset:
@@ -141,33 +110,19 @@ python -m retail_analytics.transform
 
 ### 3. PostgreSQL staging
 
-The Parquet dataset is loaded into:
+The Parquet dataset is loaded into `staging.transactions`.
 
-```text
-staging.transactions
-```
+The current loading strategy is a transactional full refresh using PostgreSQL `COPY`. The load is committed only when the database row count matches the Parquet source.
 
-The staging table mirrors the clean data contract and preserves the source lineage key.
-
-The current loading strategy is a transactional full refresh:
-
-1. create the staging schema and table if needed;
-2. truncate the existing staging table;
-3. bulk load the complete clean dataset with PostgreSQL `COPY`;
-4. compare the loaded row count with the Parquet source;
-5. commit only when both counts match.
-
-If any step fails, the transaction is rolled back.
-
-Load the clean data into PostgreSQL:
+Load staging:
 
 ```bash
 python -m retail_analytics.load
 ```
 
-## Analytical model
+### 4. Analytical star schema
 
-The analytical layer is being built as a star schema with one fact table and four dimensions:
+The staging layer is transformed into five analytical tables:
 
 ```text
               dim_date
@@ -179,7 +134,7 @@ dim_customer ─ fact_sales ─ dim_product
               dim_country
 ```
 
-Planned tables:
+Tables:
 
 - `analytics.fact_sales`
 - `analytics.dim_date`
@@ -189,11 +144,26 @@ Planned tables:
 
 The grain of `fact_sales` is **one product line within an invoice**.
 
-Cancellations and negative adjustments remain part of the fact table so they can be analysed explicitly rather than removed during preparation.
+Modelling decisions:
+
+- surrogate dimension keys are generated deterministically so repeated rebuilds produce the same mappings;
+- missing customer IDs map to an explicit `Unknown customer` member with key `0`;
+- missing product and country values also map to key `0` rather than dropping the transaction;
+- the product dimension uses the most recent non-null description observed for each `stock_code`;
+- `dim_date` contains every calendar date between the first and last transaction;
+- monetary measures are stored as exact PostgreSQL `NUMERIC` values;
+- cancellations and negative adjustments remain in `fact_sales`;
+- `source_period` and `source_row` remain the fact-table primary key and preserve lineage.
+
+Rebuild the analytical model:
+
+```bash
+python -m retail_analytics.analytics
+```
 
 ## Measures
 
-The initial analytical layer is designed around:
+The analytical layer is designed around:
 
 - Net revenue
 - Orders
@@ -203,65 +173,30 @@ The initial analytical layer is designed around:
 - Revenue per customer
 - Cancellation rate
 
-The final definitions will live alongside the SQL model and Power BI measures so each KPI has one documented business meaning.
+The exact business definitions will be added alongside the analytical SQL used for the study.
 
 ## Running the project locally
 
-### Python environment
-
 The project uses Python 3.13.
-
-Create a virtual environment:
 
 ```bash
 python -m venv .venv
-```
-
-Activate it on macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-Or on Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Install the project and development dependencies:
-
-```bash
 python -m pip install -e ".[dev]"
-```
-
-### PostgreSQL
-
-Copy `.env.example` to a local `.env` file before changing the default database settings.
-
-Start PostgreSQL:
-
-```bash
 docker compose up -d --wait postgres
 ```
 
-Check its status:
+Run the pipeline in order:
 
 ```bash
-docker compose ps
+python -m retail_analytics.extract
+python -m retail_analytics.transform
+python -m retail_analytics.load
+python -m retail_analytics.analytics
 ```
 
-Stop the environment:
-
-```bash
-docker compose down
-```
-
-The database uses a Docker named volume. Use `docker compose down -v` only when an intentional database reset is required.
+Database connection settings are read from `.env` / environment variables. Real credentials are not committed.
 
 ## Quality checks
-
-Run the local checks with:
 
 ```bash
 ruff check .
@@ -269,9 +204,7 @@ ruff format --check .
 pytest
 ```
 
-GitHub Actions runs the same checks on pull requests and on changes merged into `main`.
-
-A separate integration job starts PostgreSQL with Docker and verifies the staging loader against a real database instance.
+GitHub Actions also starts PostgreSQL in an isolated Docker environment and validates the database load and analytical model against a real database instance.
 
 ## Current progress
 
@@ -281,7 +214,7 @@ A separate integration job starts PostgreSQL with Docker and verifies the stagin
 - [x] Add reproducible dataset acquisition and raw validation
 - [x] Build the Pandas raw-to-clean transformation
 - [x] Load clean transactions into PostgreSQL staging
-- [ ] Build the analytical star schema
+- [x] Build the analytical star schema
 - [ ] Add SQL data-quality checks
 - [ ] Develop sales, customer and product analysis
 - [ ] Define final KPI calculations

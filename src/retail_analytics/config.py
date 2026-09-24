@@ -12,6 +12,7 @@ PROCESSED_TRANSACTIONS_PATH = PROCESSED_DATA_DIR / "transactions.parquet"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 STAGING_SCHEMA_SQL_PATH = PROJECT_ROOT / "sql/staging/01_create_transactions.sql"
+ANALYTICS_MODEL_SQL_PATH = PROJECT_ROOT / "sql/analytics/01_build_star_schema.sql"
 
 EXPECTED_SHEETS = (
     "Year 2009-2010",
