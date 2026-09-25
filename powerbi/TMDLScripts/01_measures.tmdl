@@ -1,0 +1,64 @@
+createOrReplace
+
+  ref table fact_sales
+    measure 'Net Revenue' = SUM('fact_sales'[line_amount])
+      formatString: £#,0.00;[Red]-£#,0.00;£0.00
+      displayFolder: KPIs
+
+    measure 'Non-Cancellation Revenue' = CALCULATE([Net Revenue], 'fact_sales'[is_cancellation] = FALSE())
+      formatString: £#,0.00;[Red]-£#,0.00;£0.00
+      displayFolder: KPIs
+
+    measure 'Sales Orders' = CALCULATE(DISTINCTCOUNT('fact_sales'[invoice_no]), 'fact_sales'[is_cancellation] = FALSE(), NOT(ISBLANK('fact_sales'[invoice_no])))
+      formatString: #,##0
+      displayFolder: KPIs
+
+    measure 'Units Sold' = CALCULATE(SUM('fact_sales'[quantity]), 'fact_sales'[is_cancellation] = FALSE(), 'fact_sales'[quantity] > 0)
+      formatString: #,##0
+      displayFolder: KPIs
+
+    measure 'Average Order Value' = DIVIDE([Non-Cancellation Revenue], [Sales Orders])
+      formatString: £#,0.00;[Red]-£#,0.00;£0.00
+      displayFolder: KPIs
+
+    measure 'Active Customers' = CALCULATE(DISTINCTCOUNT('fact_sales'[customer_key]), 'fact_sales'[customer_key] <> 0, 'fact_sales'[is_cancellation] = FALSE())
+      formatString: #,##0
+      displayFolder: KPIs
+
+    measure 'Net Revenue per Active Customer' =
+        VAR ActiveCustomerKeys =
+            CALCULATETABLE(
+                VALUES('fact_sales'[customer_key]),
+                'fact_sales'[customer_key] <> 0,
+                'fact_sales'[is_cancellation] = FALSE()
+            )
+        VAR ActiveCustomerRevenue =
+            CALCULATE(
+                [Net Revenue],
+                REMOVEFILTERS('fact_sales'[is_cancellation]),
+                TREATAS(ActiveCustomerKeys, 'fact_sales'[customer_key])
+            )
+        RETURN
+            DIVIDE(ActiveCustomerRevenue, COUNTROWS(ActiveCustomerKeys))
+      formatString: £#,0.00;[Red]-£#,0.00;£0.00
+      displayFolder: KPIs
+
+    measure 'Cancellation Invoices' = CALCULATE(DISTINCTCOUNT('fact_sales'[invoice_no]), 'fact_sales'[is_cancellation] = TRUE(), NOT(ISBLANK('fact_sales'[invoice_no])))
+      formatString: #,##0
+      displayFolder: Cancellations
+
+    measure 'Total Invoices' = CALCULATE(DISTINCTCOUNT('fact_sales'[invoice_no]), NOT(ISBLANK('fact_sales'[invoice_no])))
+      formatString: #,##0
+      displayFolder: Cancellations
+
+    measure 'Cancellation Invoice Rate' = DIVIDE([Cancellation Invoices], [Total Invoices])
+      formatString: 0.00%
+      displayFolder: Cancellations
+
+    measure 'Cancellation Value' = ABS(CALCULATE([Net Revenue], 'fact_sales'[is_cancellation] = TRUE()))
+      formatString: £#,0.00
+      displayFolder: Cancellations
+
+    measure 'Cancellation Units' = ABS(CALCULATE(SUM('fact_sales'[quantity]), 'fact_sales'[is_cancellation] = TRUE()))
+      formatString: #,##0
+      displayFolder: Cancellations
