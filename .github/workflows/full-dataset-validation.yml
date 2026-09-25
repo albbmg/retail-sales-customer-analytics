@@ -2,6 +2,9 @@ name: Full Dataset Validation
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feat/product-classification
 
 permissions:
   contents: read
