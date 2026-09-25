@@ -8,7 +8,8 @@ import psycopg
 from .config import PROFILE_SOURCE_SQL_PATH, PROJECT_ROOT
 from .database import DatabaseConfigError, DatabaseSettings
 
-ANALYSIS_DIR = PROJECT_ROOT / "sql/analysis"\nPROFILE_DIR = PROJECT_ROOT / "sql/profile"
+ANALYSIS_DIR = PROJECT_ROOT / "sql/analysis"
+PROFILE_DIR = PROJECT_ROOT / "sql/profile"
 
 ANALYSIS_FILES = {
     "overview": "01_kpi_overview.sql",
