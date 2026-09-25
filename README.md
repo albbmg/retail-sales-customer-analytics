@@ -4,6 +4,19 @@ A reproducible analytical study of transactional retail data, focused on sales b
 
 I started this project to explore how these parts of an online retail business interact over time using the **Online Retail II** dataset from the UCI Machine Learning Repository. The analysis is built as a complete data workflow, from the original workbook to a BI-ready analytical model.
 
+## Validated snapshot
+
+The complete pipeline has been run against all **1,067,371 transaction lines** in the official UCI workbook, with all **14 analytical data-quality checks** passing.
+
+- Net revenue: **£19.29M**
+- Non-cancellation sales orders: **45,336**
+- Average order value: **£459.10**
+- January-November 2011 vs. the same 2010 period: **+2.43% net revenue**, **-8.65% sales orders**, **+12.88% average order value**
+- United Kingdom share of net revenue: **84.94%**
+- Missing Customer ID: **22.77% of transaction lines**, representing **13.68% of net revenue**
+
+The detailed interpretation, limitations and query provenance are in [`docs/findings.md`](docs/findings.md).
+
 ## Questions explored
 
 The study is organised around a small set of business questions:
@@ -45,7 +58,7 @@ The workflow deliberately separates raw data, clean data, staging and analytical
 
 The project uses **Online Retail II** from the UCI Machine Learning Repository.
 
-It contains more than one million transactions from a UK-based online retailer between December 2009 and December 2011.
+It contains **1,067,371 transaction lines** from a UK-based online retailer between 1 December 2009 and 9 December 2011.
 
 Dataset source: https://archive.ics.uci.edu/dataset/502/online+retail+ii
 
