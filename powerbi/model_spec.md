@@ -56,6 +56,12 @@ Hide the surrogate-key columns:
 
 The fields remain in the model and can still be inspected when troubleshooting relationships.
 
+## Product classification
+
+Keep `dim_product[product_type]` visible in the model. It is the authoritative filter for separating merchandise rankings from operational entries.
+
+Do not replace it with a visual-level stock-code pattern or a numeric/non-numeric test.
+
 ## Data categories
 
 Set:

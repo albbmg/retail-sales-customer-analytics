@@ -77,6 +77,20 @@ Unknown customer, product and country members are preserved in the fact table ra
 - Unknown products remain visible in total revenue but are excluded from the ranked product query.
 - Unknown countries are reported explicitly as `Unknown`.
 
+## Product-performance scope
+
+Overall business KPIs include every transaction line, including shipping, fees, discounts and adjustments.
+
+Product-performance rankings are narrower: they include only rows whose product dimension member has:
+
+```text
+product_type = 'merchandise'
+```
+
+The classification is documented in [`product_classification.md`](product_classification.md).
+
+Operational codes are analysed separately rather than removed from the model.
+
 ## Monetary precision
 
 The analytical fact table stores `unit_price` and `line_amount` as PostgreSQL `NUMERIC` values. Reporting queries round display values to two decimal places while calculations use the stored exact values.
