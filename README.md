@@ -218,6 +218,16 @@ Product-classification rules are documented in [`docs/product_classification.md`
 
 The validated analytical observations are summarised in [`docs/findings.md`](docs/findings.md). Every reported figure is linked back to versioned SQL in the repository.
 
+## Documentation
+
+The main technical and analytical decisions are documented separately so the README can stay focused on the end-to-end workflow:
+
+- [Data dictionary](docs/data_dictionary.md)
+- [KPI definitions](docs/kpi_definitions.md)
+- [Product classification](docs/product_classification.md)
+- [Validated findings](docs/findings.md)
+- [Power BI semantic model and report specification](powerbi/README.md)
+
 ## Running the project locally
 
 The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
@@ -274,6 +284,12 @@ The profile focuses on source characteristics and data-quality context. The stud
 The semantic-model relationships, DAX/TMDL measures and three-page dashboard specification are versioned under [`powerbi/`](powerbi/).
 
 The report consumes the PostgreSQL `analytics` schema in Import mode so the visual layer does not redefine preparation or business rules.
+
+## License
+
+Project code and documentation are released under the [MIT License](LICENSE).
+
+The **Online Retail II** source dataset is a separate work published by the UCI Machine Learning Repository under **CC BY 4.0**. The dataset is downloaded from UCI at runtime and is not redistributed by this repository.
 
 ## Current progress
 
