@@ -150,6 +150,7 @@ Modelling decisions:
 - missing customer IDs map to an explicit `Unknown customer` member with key `0`;
 - missing product and country values also map to key `0` rather than dropping the transaction;
 - the product dimension uses the most recent non-null description observed for each `stock_code`;
+- `product_type` separates merchandise from shipping, fees, adjustments, discounts, samples, vouchers and test records using rules derived from the full-dataset profile;
 - `dim_date` contains every calendar date between the first and last transaction;
 - monetary measures are stored as exact PostgreSQL `NUMERIC` values;
 - cancellations and negative adjustments remain in `fact_sales`;
@@ -206,11 +207,14 @@ Versioned SQL queries live under `sql/analysis/` and cover:
 - overall KPIs;
 - monthly sales trends;
 - customer performance;
-- product performance;
+- merchandise product performance;
+- operational stock-code impact;
 - country performance;
 - cancellation trends.
 
 The queries run against the analytical star schema rather than staging, keeping business analysis separate from ingestion and preparation.
+
+Product-classification rules are documented in [`docs/product_classification.md`](docs/product_classification.md).
 
 ## Running the project locally
 

@@ -3,10 +3,6 @@ WITH product_metrics AS (
         p.stock_code,
         p.product_description,
         COALESCE(SUM(f.line_amount), 0) AS net_revenue,
-        COALESCE(
-            SUM(f.line_amount) FILTER (WHERE NOT f.is_cancellation),
-            0
-        ) AS non_cancellation_revenue,
         COUNT(DISTINCT f.invoice_no)
             FILTER (WHERE NOT f.is_cancellation) AS sales_orders,
         COALESCE(
@@ -25,7 +21,7 @@ WITH product_metrics AS (
         ) AS cancellation_value
     FROM analytics.fact_sales AS f
     JOIN analytics.dim_product AS p USING (product_key)
-    WHERE f.product_key <> 0
+    WHERE p.product_type = 'merchandise'
     GROUP BY p.stock_code, p.product_description
 )
 SELECT

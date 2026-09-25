@@ -112,6 +112,35 @@ WITH checks AS (
     UNION ALL
 
     SELECT
+        'product_type_classification_consistency',
+        COUNT(*)::BIGINT
+    FROM analytics.dim_product AS p
+    WHERE
+        p.stock_code IS NOT NULL
+        AND p.product_type IS DISTINCT FROM
+            CASE
+                WHEN p.stock_code IN ('DOT', 'POST', 'C2') THEN 'shipping'
+                WHEN p.stock_code IN (
+                    'AMAZONFEE',
+                    'BANK CHARGES',
+                    'CRUK'
+                ) THEN 'fee'
+                WHEN p.stock_code IN (
+                    'B',
+                    'M',
+                    'ADJUST',
+                    'ADJUST2'
+                ) THEN 'adjustment'
+                WHEN p.stock_code = 'D' THEN 'discount'
+                WHEN p.stock_code = 'S' THEN 'sample'
+                WHEN p.stock_code ~* '^gift_' THEN 'voucher'
+                WHEN p.stock_code ~* '^TEST' THEN 'test'
+                ELSE 'merchandise'
+            END
+
+    UNION ALL
+
+    SELECT
         'customer_business_key_uniqueness',
         COUNT(*)::BIGINT
     FROM (

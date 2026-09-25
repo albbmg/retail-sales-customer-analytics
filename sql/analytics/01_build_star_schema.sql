@@ -1,6 +1,12 @@
 CREATE SCHEMA IF NOT EXISTS analytics;
 
-CREATE TABLE IF NOT EXISTS analytics.dim_date (
+DROP TABLE IF EXISTS analytics.fact_sales;
+DROP TABLE IF EXISTS analytics.dim_date;
+DROP TABLE IF EXISTS analytics.dim_customer;
+DROP TABLE IF EXISTS analytics.dim_product;
+DROP TABLE IF EXISTS analytics.dim_country;
+
+CREATE TABLE analytics.dim_date (
     date_key INTEGER PRIMARY KEY,
     full_date DATE NOT NULL UNIQUE,
     year SMALLINT NOT NULL,
@@ -13,24 +19,37 @@ CREATE TABLE IF NOT EXISTS analytics.dim_date (
     is_weekend BOOLEAN NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS analytics.dim_customer (
+CREATE TABLE analytics.dim_customer (
     customer_key BIGINT PRIMARY KEY,
     customer_id BIGINT UNIQUE,
     customer_label TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS analytics.dim_product (
+CREATE TABLE analytics.dim_product (
     product_key BIGINT PRIMARY KEY,
     stock_code TEXT UNIQUE,
-    product_description TEXT NOT NULL
+    product_description TEXT NOT NULL,
+    product_type TEXT NOT NULL CHECK (
+        product_type IN (
+            'merchandise',
+            'shipping',
+            'fee',
+            'adjustment',
+            'discount',
+            'sample',
+            'voucher',
+            'test',
+            'unknown'
+        )
+    )
 );
 
-CREATE TABLE IF NOT EXISTS analytics.dim_country (
+CREATE TABLE analytics.dim_country (
     country_key BIGINT PRIMARY KEY,
     country_name TEXT UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS analytics.fact_sales (
+CREATE TABLE analytics.fact_sales (
     source_period TEXT NOT NULL,
     source_row INTEGER NOT NULL,
     invoice_no TEXT,
@@ -46,13 +65,6 @@ CREATE TABLE IF NOT EXISTS analytics.fact_sales (
     PRIMARY KEY (source_period, source_row)
 );
 
-TRUNCATE TABLE
-    analytics.fact_sales,
-    analytics.dim_date,
-    analytics.dim_customer,
-    analytics.dim_product,
-    analytics.dim_country;
-
 INSERT INTO analytics.dim_customer (
     customer_key,
     customer_id,
@@ -63,9 +75,10 @@ VALUES (0, NULL, 'Unknown customer');
 INSERT INTO analytics.dim_product (
     product_key,
     stock_code,
-    product_description
+    product_description,
+    product_type
 )
-VALUES (0, NULL, 'Unknown product');
+VALUES (0, NULL, 'Unknown product', 'unknown');
 
 INSERT INTO analytics.dim_country (
     country_key,
@@ -134,17 +147,35 @@ WITH canonical_products AS (
         invoice_date DESC NULLS LAST,
         source_period DESC,
         source_row DESC
+),
+classified_products AS (
+    SELECT
+        stock_code,
+        description,
+        CASE
+            WHEN stock_code IN ('DOT', 'POST', 'C2') THEN 'shipping'
+            WHEN stock_code IN ('AMAZONFEE', 'BANK CHARGES', 'CRUK') THEN 'fee'
+            WHEN stock_code IN ('B', 'M', 'ADJUST', 'ADJUST2') THEN 'adjustment'
+            WHEN stock_code = 'D' THEN 'discount'
+            WHEN stock_code = 'S' THEN 'sample'
+            WHEN stock_code ~* '^gift_' THEN 'voucher'
+            WHEN stock_code ~* '^TEST' THEN 'test'
+            ELSE 'merchandise'
+        END AS product_type
+    FROM canonical_products
 )
 INSERT INTO analytics.dim_product (
     product_key,
     stock_code,
-    product_description
+    product_description,
+    product_type
 )
 SELECT
     ROW_NUMBER() OVER (ORDER BY stock_code)::BIGINT AS product_key,
     stock_code,
-    COALESCE(description, 'No description') AS product_description
-FROM canonical_products
+    COALESCE(description, 'No description') AS product_description,
+    product_type
+FROM classified_products
 ORDER BY stock_code;
 
 INSERT INTO analytics.dim_country (

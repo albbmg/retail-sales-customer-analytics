@@ -23,26 +23,51 @@ pytestmark = [
 def make_clean_frame() -> pd.DataFrame:
     raw = pd.DataFrame(
         {
-            "Invoice": ["489434", "489435", "C489436", "489437"],
-            "StockCode": ["85048", "85048", "79323P", None],
-            "Description": ["OLD LIGHTS", "NEW LIGHTS", "CANDLE", None],
-            "Quantity": [12, 3, -1, 2],
+            "Invoice": [
+                "489434",
+                "489435",
+                "C489436",
+                "489437",
+                "489438",
+                "489439",
+            ],
+            "StockCode": [
+                "85048",
+                "85048",
+                "79323P",
+                None,
+                "DOT",
+                "DCGS0076",
+            ],
+            "Description": [
+                "OLD LIGHTS",
+                "NEW LIGHTS",
+                "CANDLE",
+                None,
+                "DOTCOM POSTAGE",
+                "SUNJAR LED NIGHT LIGHT",
+            ],
+            "Quantity": [12, 3, -1, 2, 1, 1],
             "InvoiceDate": [
                 datetime(2009, 12, 1, 7, 45),
                 datetime(2009, 12, 2, 8, 0),
                 datetime(2009, 12, 3, 9, 0),
                 datetime(2009, 12, 4, 10, 0),
+                datetime(2009, 12, 5, 10, 30),
+                datetime(2009, 12, 6, 11, 0),
             ],
-            "Price": [6.95, 7.25, 5.0, 2.5],
-            "Customer ID": [13085, 13085, None, 13086],
+            "Price": [6.95, 7.25, 5.0, 2.5, 10.0, 8.0],
+            "Customer ID": [13085, 13085, None, 13086, 13087, 13088],
             "Country": [
                 "United Kingdom",
                 "United Kingdom",
                 "France",
                 None,
+                "United Kingdom",
+                "United Kingdom",
             ],
-            "source_period": ["Year 2009-2010"] * 4,
-            "source_row": [2, 3, 4, 5],
+            "source_period": ["Year 2009-2010"] * 6,
+            "source_row": [2, 3, 4, 5, 6, 7],
         }
     )
     return transform_transactions(raw)
@@ -63,11 +88,11 @@ def test_star_schema_build_is_repeatable_and_preserves_relationships(tmp_path):
 
     first = build_analytics_model(settings=settings)
 
-    assert first.staging_rows == 4
-    assert first.fact_rows == 4
-    assert first.dates == 4
-    assert first.customers == 3
-    assert first.products == 3
+    assert first.staging_rows == 6
+    assert first.fact_rows == 6
+    assert first.dates == 6
+    assert first.customers == 5
+    assert first.products == 5
     assert first.countries == 3
 
     unknown_customer_rows = fetch_all(
@@ -90,6 +115,30 @@ def test_star_schema_build_is_repeatable_and_preserves_relationships(tmp_path):
     )
     assert canonical_product == [("NEW LIGHTS",)]
 
+    classifications = fetch_all(
+        settings,
+        """
+        SELECT stock_code, product_type
+        FROM analytics.dim_product
+        WHERE stock_code IN ('DOT', 'DCGS0076')
+        ORDER BY stock_code
+        """,
+    )
+    assert classifications == [
+        ("DCGS0076", "merchandise"),
+        ("DOT", "shipping"),
+    ]
+
+    unknown_product = fetch_all(
+        settings,
+        """
+        SELECT product_type
+        FROM analytics.dim_product
+        WHERE product_key = 0
+        """,
+    )
+    assert unknown_product == [("unknown",)]
+
     cancellation = fetch_all(
         settings,
         """
@@ -100,27 +149,27 @@ def test_star_schema_build_is_repeatable_and_preserves_relationships(tmp_path):
     )
     assert cancellation == [(True, Decimal("-5.0000"))]
 
-    first_customer_keys = fetch_all(
+    first_product_keys = fetch_all(
         settings,
         """
-        SELECT customer_key, customer_id
-        FROM analytics.dim_customer
-        ORDER BY customer_key
+        SELECT product_key, stock_code, product_type
+        FROM analytics.dim_product
+        ORDER BY product_key
         """,
     )
 
     second = build_analytics_model(settings=settings)
-    second_customer_keys = fetch_all(
+    second_product_keys = fetch_all(
         settings,
         """
-        SELECT customer_key, customer_id
-        FROM analytics.dim_customer
-        ORDER BY customer_key
+        SELECT product_key, stock_code, product_type
+        FROM analytics.dim_product
+        ORDER BY product_key
         """,
     )
 
-    assert second.fact_rows == 4
-    assert second_customer_keys == first_customer_keys
+    assert second.fact_rows == 6
+    assert second_product_keys == first_product_keys
 
     orphan_counts = fetch_all(
         settings,

@@ -35,7 +35,14 @@ def make_clean_frame() -> pd.DataFrame:
                 "1004",
                 "1005",
             ],
-            "StockCode": ["A", "B", "A", "A", "B", "A"],
+            "StockCode": [
+                "10001",
+                "10002",
+                "10001",
+                "10001",
+                "10002",
+                "10001",
+            ],
             "Description": [
                 "PRODUCT A",
                 "PRODUCT B",
@@ -65,6 +72,27 @@ def make_clean_frame() -> pd.DataFrame:
             ],
             "source_period": ["Year 2009-2010"] * 6,
             "source_row": [2, 3, 4, 5, 6, 7],
+        }
+    )
+    return transform_transactions(raw)
+
+
+def make_classification_frame() -> pd.DataFrame:
+    raw = pd.DataFrame(
+        {
+            "Invoice": ["2001", "2002"],
+            "StockCode": ["DCGS0076", "DOT"],
+            "Description": ["SUNJAR LED NIGHT LIGHT", "DOTCOM POSTAGE"],
+            "Quantity": [1, 1],
+            "InvoiceDate": [
+                datetime(2010, 3, 1, 10, 0),
+                datetime(2010, 3, 2, 10, 0),
+            ],
+            "Price": [10.0, 100.0],
+            "Customer ID": [1, 1],
+            "Country": ["United Kingdom", "United Kingdom"],
+            "source_period": ["Year 2009-2010", "Year 2009-2010"],
+            "source_row": [2, 3],
         }
     )
     return transform_transactions(raw)
@@ -133,7 +161,7 @@ def test_core_analysis_queries_match_documented_definitions(tmp_path):
     assert customers[1][4] == Decimal("20.00")
 
     products = run_query(settings, "04_product_performance.sql")
-    assert products[0][0] == "A"
+    assert products[0][0] == "10001"
     assert products[0][2] == Decimal("50.00")
     assert products[0][4] == 6
     assert products[0][5] == Decimal("10.00")
@@ -152,5 +180,46 @@ def test_core_analysis_queries_match_documented_definitions(tmp_path):
             1,
             Decimal("10.00"),
             1,
+        )
+    ]
+
+
+def test_merchandise_ranking_excludes_operational_codes(tmp_path):
+    settings = DatabaseSettings.from_environment()
+    parquet_path = tmp_path / "classified_transactions.parquet"
+
+    make_classification_frame().to_parquet(
+        parquet_path,
+        index=False,
+        engine="pyarrow",
+    )
+    load_transactions(parquet_path, settings=settings)
+    build_analytics_model(settings=settings)
+
+    overview = run_query(settings, "01_kpi_overview.sql")
+    assert overview[0][0] == Decimal("110.00")
+
+    products = run_query(settings, "04_product_performance.sql")
+    assert products == [
+        (
+            "DCGS0076",
+            "SUNJAR LED NIGHT LIGHT",
+            Decimal("10.00"),
+            1,
+            1,
+            Decimal("0.00"),
+        )
+    ]
+
+    operational = run_query(settings, "07_operational_stock_codes.sql")
+    assert operational == [
+        (
+            "shipping",
+            "DOT",
+            "DOTCOM POSTAGE",
+            1,
+            1,
+            Decimal("100.00"),
+            Decimal("0.00"),
         )
     ]

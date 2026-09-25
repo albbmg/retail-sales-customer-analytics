@@ -33,7 +33,7 @@ Summarise the scale and evolution of the retail activity and make cancellation i
    - Category: `dim_product[product_description]`
    - Value: Net Revenue
    - Chart: horizontal bar chart
-   - Filter out product key `0` for ranking only.
+   - Filter `dim_product[product_type] = "merchandise"`.
 
 ### Slicers
 
@@ -92,11 +92,12 @@ Compare product performance while keeping returns/cancellations visible as a sep
 1. **Top products by net revenue**
    - Category: product description
    - Value: Net Revenue
-   - Exclude unknown product from ranking.
+   - Filter `dim_product[product_type] = "merchandise"`.
 
 2. **Top products by units sold**
    - Category: product description
    - Value: Units Sold
+   - Filter `dim_product[product_type] = "merchandise"`.
 
 3. **Cancellation trend**
    - Axis: month
@@ -110,6 +111,14 @@ Compare product performance while keeping returns/cancellations visible as a sep
    - Units Sold
    - Sales Orders
    - Cancellation Value
+   - Filter `dim_product[product_type] = "merchandise"`.
+
+5. **Operational entries**
+   - Product type
+   - Stock code
+   - Product description
+   - Net Revenue
+   - Keep shipping, fees, adjustments, discounts, samples, vouchers and tests visible here rather than mixing them into merchandise rankings.
 
 ### Slicers
 
