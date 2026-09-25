@@ -2,12 +2,15 @@ name: Full Dataset Validation
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - validation/study-summary-real-data
 
 permissions:
   contents: read
 
 concurrency:
-  group: full-dataset-validation
+  group: full-dataset-validation-study-summary
   cancel-in-progress: true
 
 jobs:
