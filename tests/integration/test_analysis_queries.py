@@ -11,6 +11,7 @@ from retail_analytics.analytics import build_analytics_model
 from retail_analytics.config import PROJECT_ROOT
 from retail_analytics.database import DatabaseSettings
 from retail_analytics.load import load_transactions
+from retail_analytics.study_summary import build_study_summary
 from retail_analytics.transform import transform_transactions
 
 pytestmark = [
@@ -182,6 +183,81 @@ def test_core_analysis_queries_match_documented_definitions(tmp_path):
             1,
         )
     ]
+
+    comparable = run_query(settings, "08_comparable_periods.sql")
+    assert comparable == [
+        (
+            "2010 Jan-Nov",
+            Decimal("75.00"),
+            Decimal("85.00"),
+            4,
+            11,
+            2,
+            Decimal("21.25"),
+            Decimal("0.2000"),
+        ),
+        (
+            "2011 Jan-Nov",
+            Decimal("0.00"),
+            Decimal("0.00"),
+            0,
+            0,
+            0,
+            None,
+            None,
+        ),
+    ]
+
+    concentration = run_query(settings, "09_customer_concentration.sql")
+    assert concentration == [
+        (
+            Decimal("65.00"),
+            Decimal("45.00"),
+            Decimal("65.00"),
+            Decimal("65.00"),
+            Decimal("0.6923"),
+            Decimal("1.0000"),
+            Decimal("1.0000"),
+        )
+    ]
+
+    geography = run_query(settings, "10_geographic_concentration.sql")
+    assert geography == [
+        (
+            Decimal("75.00"),
+            Decimal("55.00"),
+            Decimal("0.7333"),
+            Decimal("1.0000"),
+        )
+    ]
+
+    unknown = run_query(settings, "11_unknown_customer_impact.sql")
+    assert unknown == [
+        (
+            1,
+            Decimal("0.1667"),
+            Decimal("10.00"),
+            Decimal("0.1333"),
+            1,
+        )
+    ]
+
+    product_types = run_query(settings, "12_product_type_impact.sql")
+    assert product_types == [
+        (
+            "merchandise",
+            6,
+            5,
+            Decimal("75.00"),
+            Decimal("85.00"),
+            Decimal("10.00"),
+        )
+    ]
+
+    summary = build_study_summary(settings=settings, top_n=2)
+    assert "Net revenue: **£75.00**" in summary
+    assert "Top 10 customers: **£65.00** (**100.00%**)" in summary
+    assert "United Kingdom net revenue: **£55.00** (**73.33%**)" in summary
 
 
 def test_merchandise_ranking_excludes_operational_codes(tmp_path):
