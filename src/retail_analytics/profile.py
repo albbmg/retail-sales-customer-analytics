@@ -8,7 +8,7 @@ import psycopg
 from .config import PROFILE_SOURCE_SQL_PATH, PROJECT_ROOT
 from .database import DatabaseConfigError, DatabaseSettings
 
-ANALYSIS_DIR = PROJECT_ROOT / "sql/analysis"
+ANALYSIS_DIR = PROJECT_ROOT / "sql/analysis"\nPROFILE_DIR = PROJECT_ROOT / "sql/profile"
 
 ANALYSIS_FILES = {
     "overview": "01_kpi_overview.sql",
@@ -107,6 +107,10 @@ def build_profile(
                 cursor,
                 ANALYSIS_DIR / ANALYSIS_FILES["countries"],
             )[:top_n]
+            non_numeric_stock_codes = _fetch_all(
+                cursor,
+                PROFILE_DIR / "02_non_numeric_stock_codes.sql",
+            )
 
     (
         staging_rows,
@@ -212,6 +216,22 @@ def build_profile(
                 "Cancellation value",
             ),
             products,
+        ),
+        "",
+        "## Non-numeric-leading stock codes", 
+        "",
+        "These codes are profiled separately because operational charges and "
+        "adjustments can otherwise appear in product rankings.",
+        "",
+        _markdown_table(
+            (
+                "Stock code",
+                "Canonical description",
+                "Transaction lines",
+                "Invoices",
+                "Net revenue",
+            ),
+            non_numeric_stock_codes,
         ),
         "",
         f"## Top {top_n} countries by net revenue",
