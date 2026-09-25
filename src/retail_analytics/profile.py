@@ -55,8 +55,7 @@ def _markdown_table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> st
     header = "| " + " | ".join(headers) + " |"
     separator = "| " + " | ".join("---" for _ in headers) + " |"
     body = [
-        "| " + " | ".join(_format_value(value) for value in row) + " |"
-        for row in rows
+        "| " + " | ".join(_format_value(value) for value in row) + " |" for row in rows
     ]
     return "\n".join([header, separator, *body])
 
@@ -177,16 +176,14 @@ def build_profile(
         "## Core KPIs",
         "",
         f"- Net revenue: **{_currency(net_revenue)}**",
-        "- Non-cancellation revenue: "
-        f"**{_currency(non_cancellation_revenue)}**",
+        f"- Non-cancellation revenue: **{_currency(non_cancellation_revenue)}**",
         f"- Sales orders: **{sales_orders:,}**",
         f"- Units sold: **{units_sold:,}**",
         f"- Average order value: **{_currency(average_order_value)}**",
         f"- Active customers: **{active_customers:,}**",
         "- Net revenue per active customer: "
         f"**{_currency(net_revenue_per_active_customer)}**",
-        "- Cancellation invoice rate: "
-        f"**{_percentage(cancellation_invoice_rate)}**",
+        f"- Cancellation invoice rate: **{_percentage(cancellation_invoice_rate)}**",
         "",
         f"## Top {top_n} identified customers by net revenue",
         "",
@@ -219,7 +216,7 @@ def build_profile(
             products,
         ),
         "",
-        "## Non-numeric-leading stock codes", 
+        "## Non-numeric-leading stock codes",
         "",
         "These codes are profiled separately because operational charges and "
         "adjustments can otherwise appear in product rankings.",
