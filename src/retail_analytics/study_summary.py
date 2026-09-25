@@ -118,9 +118,7 @@ def build_study_summary(
             product_types = _fetch_all(cursor, "12_product_type_impact.sql")
 
     if len(comparable) != 2:
-        raise StudySummaryError(
-            "Comparable-period query must return exactly two rows"
-        )
+        raise StudySummaryError("Comparable-period query must return exactly two rows")
 
     period_by_label = {row[0]: row for row in comparable}
     period_2010 = period_by_label.get("2010 Jan-Nov")
@@ -139,9 +137,7 @@ def build_study_summary(
         cancellation_invoice_rate,
     ) = overview
 
-    complete_months = [
-        row for row in monthly if row[0] < date(2011, 12, 1)
-    ]
+    complete_months = [row for row in monthly if row[0] < date(2011, 12, 1)]
     top_months = sorted(
         complete_months,
         key=lambda row: (row[1], row[0]),
@@ -253,10 +249,8 @@ def build_study_summary(
         f"- Units sold: **{_integer(units_sold)}**",
         f"- Average order value: **{_currency(average_order_value)}**",
         f"- Active customers: **{_integer(active_customers)}**",
-        "- Net revenue per active customer: "
-        f"**{_currency(net_revenue_per_customer)}**",
-        "- Cancellation invoice rate: "
-        f"**{_percentage(cancellation_invoice_rate)}**",
+        f"- Net revenue per active customer: **{_currency(net_revenue_per_customer)}**",
+        f"- Cancellation invoice rate: **{_percentage(cancellation_invoice_rate)}**",
         "- Signed revenue difference associated with cancellation invoices: "
         f"**{_currency(non_cancellation_revenue - net_revenue)}**",
         "",
@@ -373,8 +367,7 @@ def build_study_summary(
         "",
         "## Interpretation boundaries",
         "",
-        "- These are descriptive transaction-level observations, not causal "
-        "estimates.",
+        "- These are descriptive transaction-level observations, not causal estimates.",
         "- The source does not contain product cost, so revenue must not be "
         "read as profit.",
         "- Cancellation invoices are separate records; their rate is not a "
