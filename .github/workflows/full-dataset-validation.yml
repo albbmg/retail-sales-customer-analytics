@@ -1,0 +1,66 @@
+name: Full Dataset Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - validation/real-data
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-dataset-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-full-dataset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      POSTGRES_DB: retail_analytics
+      POSTGRES_USER: retail_user
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+
+      - name: Download and validate UCI source
+        run: python -m retail_analytics.extract
+
+      - name: Build clean Parquet dataset
+        run: python -m retail_analytics.transform
+
+      - name: Start PostgreSQL
+        run: docker compose up -d --wait postgres
+
+      - name: Load staging
+        run: python -m retail_analytics.load
+
+      - name: Build analytical model
+        run: python -m retail_analytics.analytics
+
+      - name: Run analytical data-quality checks
+        run: python -m retail_analytics.quality
+
+      - name: Generate real-data profile
+        run: python -m retail_analytics.profile --output validation/real_data_profile.md
+
+      - name: Print validation profile
+        run: cat validation/real_data_profile.md
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: docker compose down -v
