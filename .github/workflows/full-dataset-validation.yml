@@ -2,15 +2,12 @@ name: Full Dataset Validation
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - validation/real-data
 
 permissions:
   contents: read
 
 concurrency:
-  group: full-dataset-validation-${{ github.ref }}
+  group: full-dataset-validation
   cancel-in-progress: true
 
 jobs:
