@@ -246,6 +246,20 @@ PostgreSQL integration tests are isolated with the `integration` marker and run 
 
 GitHub Actions also starts PostgreSQL in an isolated Docker environment and validates the database load and analytical model against a real database instance.
 
+## Full dataset validation
+
+A separate manual GitHub Actions workflow runs the complete pipeline against the official UCI source rather than a small fixture.
+
+It downloads the workbook, builds the clean layer, loads PostgreSQL, rebuilds the star schema, runs all analytical quality checks and prints a reproducible Markdown profile of the resulting dataset.
+
+The validation workflow is intentionally manual because it processes the complete 1M+ row source dataset and is used for release-level verification rather than for every pull request.
+
+The same profile can be generated locally after the analytical model has been built:
+
+```bash
+python -m retail_analytics.profile
+```
+
 ## Power BI
 
 The semantic-model relationships, DAX/TMDL measures and three-page dashboard specification are versioned under [`powerbi/`](powerbi/).
