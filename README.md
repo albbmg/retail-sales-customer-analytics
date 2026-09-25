@@ -216,6 +216,8 @@ The queries run against the analytical star schema rather than staging, keeping 
 
 Product-classification rules are documented in [`docs/product_classification.md`](docs/product_classification.md).
 
+The validated analytical observations are summarised in [`docs/findings.md`](docs/findings.md). Every reported figure is linked back to versioned SQL in the repository.
+
 ## Running the project locally
 
 The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
@@ -258,11 +260,14 @@ It downloads the workbook, builds the clean layer, loads PostgreSQL, rebuilds th
 
 The validation workflow is intentionally manual because it processes the complete 1M+ row source dataset and is used for release-level verification rather than for every pull request.
 
-The same profile can be generated locally after the analytical model has been built:
+The same validation outputs can be generated locally after the analytical model has been built:
 
 ```bash
 python -m retail_analytics.profile
+python -m retail_analytics.study_summary
 ```
+
+The profile focuses on source characteristics and data-quality context. The study summary uses versioned analytical SQL to produce comparable-period, concentration, geographic, customer-coverage and product-type metrics.
 
 ## Power BI
 
@@ -283,4 +288,4 @@ The report consumes the PostgreSQL `analytics` schema in Import mode so the visu
 - [x] Develop sales, customer and product analysis
 - [x] Define final KPI calculations
 - [ ] Build and validate the Power BI report
-- [ ] Document findings and business conclusions
+- [x] Document validated analytical findings

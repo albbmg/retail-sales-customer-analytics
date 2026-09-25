@@ -58,6 +58,12 @@ jobs:
       - name: Print validation profile
         run: cat validation/real_data_profile.md
 
+      - name: Generate analytical study summary
+        run: python -m retail_analytics.study_summary --output validation/study_summary.md
+
+      - name: Print analytical study summary
+        run: cat validation/study_summary.md
+
       - name: Stop PostgreSQL
         if: always()
         run: docker compose down -v
