@@ -299,27 +299,27 @@ def build_study_summary(
         "- Net revenue attributable to the active identified-customer "
         f"population: **{_currency(active_customer_net_revenue)}**",
         f"- Top customer: **{_currency(top_1_net_revenue)}** "
-        f"({_percentage(top_1_share)})",
+        f"(**{_percentage(top_1_share)}**)",
         f"- Top 10 customers: **{_currency(top_10_net_revenue)}** "
-        f"({_percentage(top_10_share)})",
+        f"(**{_percentage(top_10_share)}**)",
         f"- Top 100 customers: **{_currency(top_100_net_revenue)}** "
-        f"({_percentage(top_100_share)})",
+        f"(**{_percentage(top_100_share)}**)",
         "",
         "## Geographic concentration",
         "",
         f"- Total net revenue: **{_currency(total_geographic_revenue)}**",
         f"- United Kingdom net revenue: **{_currency(uk_net_revenue)}** "
-        f"({_percentage(uk_share)})",
+        f"(**{_percentage(uk_share)}**)",
         f"- Top five countries' share: **{_percentage(top_5_country_share)}**",
         "",
         "## Missing customer identifiers",
         "",
         f"- Transaction lines mapped to Unknown customer: "
         f"**{_integer(unknown_customer_lines)}** "
-        f"({_percentage(unknown_line_share)})",
+        f"(**{_percentage(unknown_line_share)}**)",
         f"- Net revenue mapped to Unknown customer: "
         f"**{_currency(unknown_net_revenue)}** "
-        f"({_percentage(unknown_revenue_share)})",
+        f"(**{_percentage(unknown_revenue_share)}**)",
         f"- Non-cancellation invoices with Unknown customer: "
         f"**{_integer(unknown_sales_orders)}**",
         "",
