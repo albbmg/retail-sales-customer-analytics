@@ -284,3 +284,9 @@ The report consumes the PostgreSQL `analytics` schema in Import mode so the visu
 - [x] Define final KPI calculations
 - [ ] Build and validate the Power BI report
 - [ ] Document findings and business conclusions
+
+## License
+
+The original code and project documentation in this repository are available under the [MIT License](LICENSE).
+
+The **Online Retail II** dataset is not redistributed by this repository and remains subject to its original **CC BY 4.0** license and UCI attribution described in the Dataset section above.
