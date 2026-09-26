@@ -27,7 +27,9 @@ https://learn.microsoft.com/power-query/connectors/postgresql
 
 ## Model setup
 
-Apply the relationships and field configuration in [`model_spec.md`](model_spec.md).
+Create and validate the relationships first using [`relationship_checklist.md`](relationship_checklist.md).
+
+Then apply the remaining field configuration in [`model_spec.md`](model_spec.md).
 
 After the tables and relationships exist, open **TMDL view** in Power BI Desktop and apply:
 
