@@ -4,6 +4,8 @@ The Power BI layer consumes the PostgreSQL `analytics` star schema and does not 
 
 ## Connection
 
+Follow the first-step checklist in [`connection_checklist.md`](connection_checklist.md).
+
 Use the native **PostgreSQL database** connector in Power BI Desktop.
 
 Recommended connectivity mode: **Import**.
