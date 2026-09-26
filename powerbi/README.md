@@ -31,13 +31,15 @@ Create and validate the relationships first using [`relationship_checklist.md`](
 
 Then apply the remaining field configuration in [`model_spec.md`](model_spec.md).
 
-After the tables and relationships exist, open **TMDL view** in Power BI Desktop and apply:
+After the tables and relationships exist, apply and validate the measures using [`measure_validation_checklist.md`](measure_validation_checklist.md).
+
+The checklist uses:
 
 ```text
 TMDLScripts/01_measures.tmdl
 ```
 
-The script adds the measures defined in `docs/kpi_definitions.md`.
+The script adds the measures defined in `docs/kpi_definitions.md` and validates them against the SQL/full-dataset totals before any report page is built.
 
 Microsoft TMDL view documentation:
 https://learn.microsoft.com/power-bi/transform-model/desktop-tmdl-view
