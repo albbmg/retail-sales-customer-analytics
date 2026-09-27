@@ -48,6 +48,8 @@ https://learn.microsoft.com/power-bi/transform-model/desktop-tmdl-view
 
 Build and validate the first page using [`executive_overview_checklist.md`](executive_overview_checklist.md).
 
+Then build and validate the second page using [`customer_analysis_checklist.md`](customer_analysis_checklist.md).
+
 The report is intentionally limited to three pages:
 
 1. Executive Overview
