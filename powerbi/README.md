@@ -46,6 +46,8 @@ https://learn.microsoft.com/power-bi/transform-model/desktop-tmdl-view
 
 ## Report design
 
+Build and validate the first page using [`executive_overview_checklist.md`](executive_overview_checklist.md).
+
 The report is intentionally limited to three pages:
 
 1. Executive Overview
