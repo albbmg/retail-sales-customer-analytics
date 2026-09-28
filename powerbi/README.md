@@ -50,6 +50,8 @@ Build and validate the first page using [`executive_overview_checklist.md`](exec
 
 Then build and validate the second page using [`customer_analysis_checklist.md`](customer_analysis_checklist.md).
 
+Finally, build and validate the third page using [`product_cancellation_analysis_checklist.md`](product_cancellation_analysis_checklist.md).
+
 The report is intentionally limited to three pages:
 
 1. Executive Overview
