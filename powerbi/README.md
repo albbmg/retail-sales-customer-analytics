@@ -54,6 +54,8 @@ Finally, build and validate the third page using [`product_cancellation_analysis
 
 After all three pages are complete, run the cross-page review in [`final_consistency_checklist.md`](final_consistency_checklist.md).
 
+Then complete the Desktop validation and screenshot handoff in [`final_desktop_handoff.md`](final_desktop_handoff.md).
+
 The report is intentionally limited to three pages:
 
 1. Executive Overview
