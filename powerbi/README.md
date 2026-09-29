@@ -52,6 +52,8 @@ Then build and validate the second page using [`customer_analysis_checklist.md`]
 
 Finally, build and validate the third page using [`product_cancellation_analysis_checklist.md`](product_cancellation_analysis_checklist.md).
 
+After all three pages are complete, run the cross-page review in [`final_consistency_checklist.md`](final_consistency_checklist.md).
+
 The report is intentionally limited to three pages:
 
 1. Executive Overview
