@@ -245,11 +245,21 @@ The main technical and analytical decisions are documented separately so the REA
 
 The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
 
+Create the local environment file from the versioned template before starting PostgreSQL:
+
+```bash
+cp .env.example .env
+```
+
+Then install the project and start the database:
+
 ```bash
 python -m venv .venv
 python -m pip install -e ".[dev]"
 docker compose up -d --wait postgres
 ```
+
+Review `.env` before running the pipeline if the default local PostgreSQL credentials or port need to be changed. The file is local-only and must not be committed.
 
 Run the pipeline in order:
 
