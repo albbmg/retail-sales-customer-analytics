@@ -289,6 +289,22 @@ Do not continue to reporting if any quality check returns `FAIL`; fix the analyt
 
 Database connection settings are read from `.env` / environment variables. Real credentials are not committed.
 
+### Stopping the local database
+
+Stop the PostgreSQL container without deleting its persisted data:
+
+```bash
+docker compose down
+```
+
+To reset the local database completely, including the Docker volume:
+
+```bash
+docker compose down -v
+```
+
+Use the volume-removal command only when a clean database rebuild is intentional; the next pipeline run will need to recreate and reload the analytical data.
+
 ## Quality checks
 
 ```bash
