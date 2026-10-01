@@ -245,16 +245,24 @@ The main technical and analytical decisions are documented separately so the REA
 
 The project is tested on Python 3.13; the supported runtime range is declared in `pyproject.toml`.
 
-Create the local environment file from the versioned template before starting PostgreSQL:
+Create the local environment file from the versioned template and activate an isolated Python environment before installing the project.
+
+### Windows PowerShell
+
+```powershell
+Copy-Item .env.example .env
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+docker compose up -d --wait postgres
+```
+
+### macOS / Linux
 
 ```bash
 cp .env.example .env
-```
-
-Then install the project and start the database:
-
-```bash
-python -m venv .venv
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e ".[dev]"
 docker compose up -d --wait postgres
 ```
