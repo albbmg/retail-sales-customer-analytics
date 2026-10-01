@@ -279,6 +279,14 @@ python -m retail_analytics.analytics
 python -m retail_analytics.quality
 ```
 
+A successful full analytical build ends with:
+
+```text
+All 14 analytical data-quality checks passed
+```
+
+Do not continue to reporting if any quality check returns `FAIL`; fix the analytical model first so Power BI consumes a validated dataset.
+
 Database connection settings are read from `.env` / environment variables. Real credentials are not committed.
 
 ## Quality checks
